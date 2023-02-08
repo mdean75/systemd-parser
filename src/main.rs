@@ -2,8 +2,11 @@ extern crate pest;
 #[macro_use]
 extern crate pest_derive;
 
+use std::fmt::{Display, Formatter, write};
 use std::fs;
 use pest::Parser;
+use serde_derive::{Serialize, Deserialize};
+use serde_json::json;
 
 #[derive(Debug, Clone)]
 /// Represents a variant type of Systemd unit file values.
@@ -24,38 +27,116 @@ pub enum SectionType {
     Install(String)
 }
 
-#[derive(Default, Debug)]
+#[derive(Default, Debug, Serialize, Deserialize)]
+#[serde(rename_all="camelCase")]
 pub struct UnitSection {
     head: String,
     description: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
     after: Option<Vec<String>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     documentation: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     requires: Option<Vec<String>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     wants: Option<Vec<String>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     binds_to: Option<String>, // not sure if this can be repeated
+    #[serde(skip_serializing_if = "Option::is_none")]
     before: Option<Vec<String>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     conflicts: Option<Vec<String>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     condition: Option<String>, // not sure if this can be repeated
+    #[serde(skip_serializing_if = "Option::is_none")]
     assert: Option<Vec<String>>,
 }
 
-#[derive(Default, Debug)]
+impl Display for UnitSection {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        let mut s = String::new();
+        s.push_str(self.head.as_str());
+        s.push_str(self.description.as_str());
+
+        if let Some(after) = self.after.as_ref() {
+            s.push_str(after.join("").as_str()); // add a space once the line ending chars are removed from parsing
+        }
+
+        if let Some(doc) = self.documentation.as_ref() {
+            s.push_str(doc);
+        }
+
+        if let Some(req) = self.requires.as_ref() {
+            s.push_str(req.join(" ").as_str());
+        }
+
+        if let Some(wants) = self.wants.as_ref() {
+            s.push_str(wants.join(" ").as_str());
+        }
+
+        if let Some(binds) = self.binds_to.as_ref() {
+            s.push_str(binds);
+        }
+
+        if let Some(before) = self.before.as_ref() {
+            s.push_str(before.join(" ").as_str());
+        }
+
+        if let Some(conflicts) = self.conflicts.as_ref() {
+            s.push_str(conflicts.join(" ").as_str());
+        }
+
+        if let Some(condition) = self.condition.as_ref() {
+            s.push_str(condition);
+        }
+
+        if let Some(assert) = self.assert.as_ref() {
+            s.push_str(assert.join(" ").as_str());
+        }
+
+        write!(f, "{s}")
+
+    }
+}
+
+#[derive(Default, Debug, Serialize, Deserialize)]
+#[serde(rename_all="camelCase")]
 pub struct ServiceSection {
     head: String,
     exec_start: Vec<String>,
 }
 
-#[derive(Default, Debug)]
+impl Display for ServiceSection {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}{}\n", self.head, self.exec_start.join(" "))
+    }
+}
+
+#[derive(Default, Debug, Serialize, Deserialize)]
+#[serde(rename_all="camelCase")]
 pub struct InstallSection {
     head: String
 }
 
-#[derive(Default, Debug)]
+impl Display for InstallSection {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}\n", self.head)
+    }
+}
+
+#[derive(Default, Debug, Serialize, Deserialize)]
+#[serde(rename_all="camelCase")]
 pub struct SystemdFile {
     // section: SectionType
     unit: UnitSection,
     service: ServiceSection,
     install: InstallSection,
+}
+
+impl Display for SystemdFile {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}\n{}\n{}\n", self.unit, self.service, self.install)
+    }
 }
 
 fn main() {
@@ -86,11 +167,12 @@ fn main() {
                                         file_struct.unit.description = prop.as_span().as_str().to_string()
                                     }
                                     Rule::after => {
-                                        if let Some(mut x) = file_struct.unit.after.clone() {
-                                            x.push(prop.as_str().to_string());
-                                            file_struct.unit.after = Some(x);
-                                        } else {
-                                            file_struct.unit.after = Some(vec![prop.as_str().to_string()]);
+                                        match file_struct.unit.after {
+                                            None => { file_struct.unit.after = Some(vec![prop.as_str().to_string()]); }
+                                            Some(mut x) => {
+                                                x.push(prop.as_str().to_string());
+                                                file_struct.unit.after = Some(x);
+                                            }
                                         }
                                     }
 
@@ -124,5 +206,14 @@ fn main() {
         }
     }
 
-    println!("file struct: {:?}", file_struct);
+
+    println!("{}", serde_json::to_string_pretty(&file_struct).unwrap());
+    let json_data = serde_json::to_string_pretty(&file_struct).unwrap();
+
+    let mut d: SystemdFile = serde_json::from_str(json_data.as_str()).unwrap();
+    d.service.exec_start[0] = "ExecStart=/new/path/to/binary".to_string();
+
+
+    println!("deserialized: \n\n{}", d);
+    fs::write("updated_unit.service", d.to_string()).unwrap();
 }
