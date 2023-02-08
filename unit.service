@@ -1,0 +1,8 @@
+[Unit]
+After=network.target
+Description=my service
+After=libvirtd.service
+
+[Service]
+ExecStart=/path/to/start -f -cd --long-bool-flag
+[Install]
