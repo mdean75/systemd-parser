@@ -4,5 +4,5 @@ Description=my service
 After=libvirtd.service
 
 [Service]
-ExecStart=/path/to/start -f -cd --long-bool-flag
+ExecStart=/path/to/start --f -cd --long-bool-flag -m test
 [Install]
