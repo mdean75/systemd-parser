@@ -1,3 +1,9 @@
+//
+// Created by intellij-pest on 2023-02-10
+// systemd-updated
+// Author: dc-user
+//
+
 file = { SOI ~ unit_section ~ service_section ~ install_section_heading ~ NEW_LINE* ~ EOI }
 
 
@@ -15,17 +21,27 @@ bool_flag = { ("--" | "-") ~ ((ASCII_ALPHANUMERIC+ ~ "-" ~ ASCII_ALPHANUMERIC+) 
 char = { (ASCII_ALPHANUMERIC | "-")+ }
 
 service_section_heading = { "[Service]" }
-exec_start = { "ExecStart=" ~ ("/" ~ ASCII_ALPHANUMERIC+)+ ~ bool_flag* }
+//exec_start = { "ExecStart=" ~ ("/" ~ ASCII_ALPHANUMERIC+)+ ~ bool_flag* }
+exec_start = { "ExecStart=" ~ exe_path_semver }
 service_section = { service_section_heading ~ NEW_LINE+ ~ exec_start ~ NEW_LINE+}
-
+exe_path = { ("/" ~ ( (ASCII_ALPHANUMERIC+ ~ ("_" | "-") ~ ASCII_ALPHANUMERIC+ ~ (("_" | "-" | "+" | "." | ":") ~ ASCII_ALPHANUMERIC+)*)+ | (ASCII_ALPHANUMERIC+ ~ "_" ~ ASCII_ALPHANUMERIC+)+ | ASCII_ALPHANUMERIC+))+ }
+//exe_path = { ("/" ~ (ASCII_ALPHANUMERIC+ ~ "_")+ | ASCII_ALPHANUMERIC+)+ }
+//semver = { "-" ~ ASCII_DIGIT ~ "." ~ ASCII_DIGIT ~ "." ~ ASCII_DIGIT }
 install_section_heading = { "[Install]" }
-
+//exe_path_semver = { ("/" ~ ( semver | (ASCII_ALPHANUMERIC+ ~ "_" ~ ASCII_ALPHANUMERIC+)+ | ASCII_ALPHANUMERIC+))+ }
 exe_path_semver = { ("/" ~ ( semver | (ASCII_ALPHANUMERIC+ ~ "_" ~ ASCII_ALPHANUMERIC+)+ | (ASCII_ALPHANUMERIC+ ~ ("." ~ ASCII_ALPHANUMERIC+)?)))+ }
-// still not quite right, "/path.exe" is not valid
+
+
+
 semver = { (ASCII_ALPHANUMERIC+ ~ ("_" | "-") ~ ASCII_ALPHANUMERIC+ ~ (("_" | "-" | "+" | "." | ":") ~ ASCII_ALPHANUMERIC+)*)+ }
 
-/*
-exe_path_semver = { ("/" ~ ( semver | (ASCII_ALPHANUMERIC+ ~ "_" ~ ASCII_ALPHANUMERIC+)+ | ASCII_ALPHANUMERIC+))+ }
-semver = { (ASCII_ALPHANUMERIC+ ~ ("_" | "-") ~ ASCII_ALPHANUMERIC+ ~ ( filename_seperator ~ ASCII_ALPHANUMERIC+)*)+ }
-filename_seperator = { ("_" | "-" | "+" | "." | ":") }
-*/
+//filename_seperator = { ("_" | "-" | "+" | "." | ":") }
+
+// start_me
+// start-me
+// start_me-1.1.1
+// start.sh
+// start.sh
+// start_me.sh
+// start-x86_64
+// start-x86_64-1.1.1
