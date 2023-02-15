@@ -1,5 +1,5 @@
 use serde_derive::{Deserialize, Serialize};
-use std::fmt::{Display, format, Formatter};
+use std::fmt::{Display, Formatter};
 use pest::Parser;
 use pest_derive::Parser;
 
