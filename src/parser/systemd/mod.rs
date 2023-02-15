@@ -30,7 +30,7 @@ pub struct UnitSection {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub after: Option<Vec<String>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    documentation: Option<String>, // todo: documentation needs to be a repeated field
+    documentation: Option<Vec<String>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     requires: Option<Vec<String>>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -66,7 +66,7 @@ impl Display for UnitSection {
         }
 
         if let Some(doc) = self.documentation.as_ref() {
-            s.push_str(format!("{}\n", doc).as_str());
+            s.push_str(format!("{}\n", doc.join("\n")).as_str());
         }
 
         if let Some(req) = self.requires.as_ref() {
@@ -117,7 +117,7 @@ pub struct ServiceSection {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub start_post: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub reload: Option<String>, // todo: make this repeated field
+    pub reload: Option<Vec<String>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub exec_stop: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -154,7 +154,7 @@ impl Display for ServiceSection {
 
         s.push_str(format!("{}\n", self.head.as_str()).as_str());
         if let Some(comment) = self.comments.as_ref() {
-            s.push_str(format!("{}\n", comment.join("\n").as_str()).as_str());
+            s.push_str(format!("{}\n", comment.join("\n")).as_str());
         }
         s.push_str(format!("{}\n", self.service_type.as_str()).as_str());
         s.push_str(format!("{}\n", self.exec_start.join(" ").as_str()).as_str());
@@ -166,7 +166,7 @@ impl Display for ServiceSection {
             s.push_str(format!("{}\n", start_post).as_str());
         }
         if let Some(reload) = self.reload.as_ref() {
-            s.push_str(format!("{}\n", reload).as_str());
+            s.push_str(format!("{}\n", reload.join("\n")).as_str());
         }
         if let Some(exec_stop) = self.exec_stop.as_ref() {
             s.push_str(format!("{}\n", exec_stop).as_str());
@@ -269,7 +269,7 @@ pub struct SystemdFile {
 
 impl Display for SystemdFile {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}\n{}\n{}", self.unit, self.service, self.install)
+        write!(f, "{}{}{}", self.unit, self.service, self.install)
     }
 }
 
@@ -298,7 +298,13 @@ pub fn parse(unparsed_file: &str) -> SystemdFile {
                                         file_struct.unit.description = prop.as_span().as_str().to_string()
                                     },
                                     Rule::documentation => {
-                                        file_struct.unit.documentation = Some(prop.as_span().as_str().to_string())
+                                        match file_struct.unit.documentation {
+                                            None => file_struct.unit.documentation = Some(vec![prop.as_span().as_str().to_string()]),
+                                            Some(mut x) => {
+                                                x.push(prop.as_str().to_string());
+                                                file_struct.unit.documentation = Some(x);
+                                            }
+                                        }
                                     },
                                     Rule::requires => {
                                         match file_struct.unit.requires {
@@ -409,7 +415,14 @@ pub fn parse(unparsed_file: &str) -> SystemdFile {
                                         file_struct.service.start_post = Some(prop.as_span().as_str().to_string())
                                     },
                                     Rule::reload => {
-                                        file_struct.service.reload = Some(prop.as_span().as_str().to_string())
+                                        // file_struct.service.reload = Some(prop.as_span().as_str().to_string())
+                                        match file_struct.service.reload {
+                                            None => file_struct.service.reload = Some(vec![prop.as_span().as_str().to_string()]),
+                                            Some(mut x) => {
+                                                x.push(prop.as_str().to_string());
+                                                file_struct.service.reload = Some(x);
+                                            }
+                                        }
                                     },
                                     Rule::exec_stop => {
                                         file_struct.service.exec_stop = Some(prop.as_span().as_str().to_string())
