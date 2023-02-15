@@ -1,0 +1,60 @@
+file = { SOI ~ (NEWLINE | unit | service | install | comment)+ ~ NEWLINE* ~ EOI }
+
+comment = { ("#" | "//") ~ (ASCII_ALPHANUMERIC  | SPACE_SEPARATOR | PUNCTUATION | SYMBOL)+ }
+directive_separator = { "=" | ":" }
+property_value = { (ASCII_ALPHANUMERIC | SPACE_SEPARATOR | PUNCTUATION | SYMBOL)+ }
+
+unit = { unit_tag ~ NEWLINE ~ unit_prop+ }
+service = { service_tag ~ NEWLINE ~ service_prop+ }
+install = { install_tag ~ NEWLINE ~ install_prop* }
+
+unit_tag = { "[Unit]" }
+service_tag = { "[Service]" }
+install_tag = { "[Install]" }
+
+unit_prop = { (description | documentation | requires | wants | binds_to | before | after | conflicts | condition
+                | assert | condition_path_exists | comment) ~ NEWLINE* }
+
+description = { "Description" ~ directive_separator ~ property_value }
+documentation = { "Documentation" ~ directive_separator ~ property_value }
+requires = { "Requires" ~ directive_separator ~ property_value }
+wants = { "Wants" ~ directive_separator ~ property_value }
+binds_to = { "BindsTo" ~ directive_separator ~ property_value }
+before = { "Before" ~ directive_separator ~ property_value }
+after = { "After" ~ directive_separator ~ property_value }
+conflicts = { "Conflicts" ~ directive_separator ~ property_value }
+condition = { "Condition" ~ directive_separator ~ property_value }
+assert = { "Assert" ~ directive_separator ~ property_value }
+condition_path_exists = { "ConditionPathExists" ~ directive_separator ~ property_value }
+
+service_prop = { (service_type | exec_start | start_pre | start_post | reload | exec_stop | stop_post
+                    | restart_sec | restart | timeout_sec | environment_file | kill_mode | restart_prevent_exit_status
+                    | runtime_directory | runtime_directory_mode | environment | standard_output | limit_no_file
+                    | comment) ~ NEWLINE* }
+
+service_type = { "Type" ~ directive_separator ~ property_value }
+exec_start = { "ExecStart" ~ directive_separator ~ property_value }
+start_pre = { "ExecStartPre" ~ directive_separator ~ property_value }
+start_post = { "ExecStartPost" ~ directive_separator ~ property_value }
+reload = { "ExecReload" ~ directive_separator ~ property_value }
+exec_stop = { "ExecStop" ~ directive_separator ~ property_value }
+stop_post = { "ExecStopPost" ~ directive_separator ~ property_value }
+restart_sec = { "RestartSec" ~ directive_separator ~ property_value }
+restart = { "Restart" ~ directive_separator ~ property_value }
+timeout_sec = { "TimeoutSec" ~ directive_separator ~ property_value }
+environment_file = { "EnvironmentFile" ~ directive_separator ~ property_value }
+kill_mode = { "KillMode" ~ directive_separator ~ property_value }
+restart_prevent_exit_status = { "RestartPreventExitStatus" ~ directive_separator ~ property_value }
+runtime_directory = { "RuntimeDirectory" ~ directive_separator ~ property_value }
+runtime_directory_mode = { "RuntimeDirectoryMode" ~ directive_separator ~ property_value }
+environment = { "Environment" ~ directive_separator ~ property_value }
+standard_output = { "StandardOutput" ~ directive_separator ~ property_value }
+limit_no_file = { "LimitNOFILE" ~ directive_separator ~ property_value }
+
+install_prop = { (wanted_by | required_by | alias | also | default_instance | comment) ~ NEWLINE* }
+
+wanted_by = { "WantedBy" ~ directive_separator ~ property_value }
+required_by = { "RequiredBy" ~ directive_separator ~ property_value }
+alias = { "Alias" ~ directive_separator ~ property_value }
+also = { "Also" ~ directive_separator ~ property_value }
+default_instance = { "DefaultInstance" ~ directive_separator ~ property_value }

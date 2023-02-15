@@ -1,0 +1,10 @@
+[Unit]
+After=network.target
+Description=my service
+After=libvirtd.service
+
+[Service]
+ExecStart=/path/to/start-1.1.1-1de3ca3 -p 50051 -sl="10.1.1.1" -c=12 --nginx-enabled --from-file=test.txt
+Type=simple
+Restart=always
+[Install]
