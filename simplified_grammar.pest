@@ -30,7 +30,7 @@ condition_path_exists = { "ConditionPathExists" ~ directive_separator ~ property
 service_prop = { (service_type | exec_start | start_pre | start_post | reload | exec_stop | stop_post
                     | restart_sec | restart | timeout_sec | environment_file | kill_mode | restart_prevent_exit_status
                     | runtime_directory | runtime_directory_mode | environment | standard_output | limit_no_file
-                    | comment) ~ NEWLINE* }
+                    | working_directory | user | start_limit_interval |comment) ~ NEWLINE* }
 
 service_type = { "Type" ~ directive_separator ~ property_value }
 exec_start = { "ExecStart" ~ directive_separator ~ property_value }
@@ -50,6 +50,10 @@ runtime_directory_mode = { "RuntimeDirectoryMode" ~ directive_separator ~ proper
 environment = { "Environment" ~ directive_separator ~ property_value }
 standard_output = { "StandardOutput" ~ directive_separator ~ property_value }
 limit_no_file = { "LimitNOFILE" ~ directive_separator ~ property_value }
+
+working_directory = { "WorkingDirectory" ~ directive_separator ~ property_value }
+user = { "User" ~ directive_separator ~ property_value }
+start_limit_interval = { "StartLimitInterval" ~ directive_separator ~ property_value }
 
 install_prop = { (wanted_by | required_by | alias | also | default_instance | comment) ~ NEWLINE* }
 

@@ -145,7 +145,13 @@ pub struct ServiceSection {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub limit_no_file: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub comments: Option<Vec<String>>
+    pub comments: Option<Vec<String>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub working_directory: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub user: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub start_limit_interval: Option<String>
 }
 
 impl Display for ServiceSection {
@@ -206,6 +212,15 @@ impl Display for ServiceSection {
         }
         if let Some(limit_no_file) = self.limit_no_file.as_ref() {
             s.push_str(format!("{}\n", limit_no_file).as_str());
+        }
+        if let Some(working_directory) = self.working_directory.as_ref() {
+            s.push_str(format!("{}\n", working_directory).as_str());
+        }
+        if let Some(user) = self.user.as_ref() {
+            s.push_str(format!("{}\n", user).as_str());
+        }
+        if let Some(start_limit_interval) = self.start_limit_interval.as_ref() {
+            s.push_str(format!("{}\n", start_limit_interval).as_str());
         }
 
         writeln!(f, "{s}")
@@ -462,6 +477,15 @@ pub fn parse(unparsed_file: &str) -> SystemdFile {
                                     },
                                     Rule::limit_no_file => {
                                         file_struct.service.limit_no_file = Some(prop.as_span().as_str().to_string())
+                                    },
+                                    Rule::working_directory => {
+                                        file_struct.service.working_directory = Some(prop.as_span().as_str().to_string())
+                                    },
+                                    Rule::user => {
+                                        file_struct.service.user = Some(prop.as_span().as_str().to_string())
+                                    },
+                                    Rule::start_limit_interval => {
+                                        file_struct.service.start_limit_interval = Some(prop.as_span().as_str().to_string())
                                     },
                                     Rule::comment => {
                                         match file_struct.service.comments {
