@@ -7,10 +7,20 @@ fn main() {
 
     let args = Cli::parse();
 
+    if args.validate {
+        let unparsed_file = fs::read_to_string(args.in_file).expect("cannot read file");
+        let parsed = systemd_parser::parser::systemd::parse(unparsed_file.as_str());
+        match parsed {
+            Err(e) => println!("File is not valid: \n{e}"),
+            Ok(_) => println!("File has valid syntax")
+        }
+        return;
+    }
+
     if args.parse {
         let unparsed_file = fs::read_to_string(args.in_file).expect("cannot read file");
 
-        let parsed = systemd_parser::parser::systemd::parse(unparsed_file.as_str());
+        let parsed = systemd_parser::parser::systemd::parse(unparsed_file.as_str()).unwrap();
 
         let json_data = serde_json::to_string_pretty(&parsed).unwrap();
 
@@ -34,6 +44,9 @@ pub struct Cli {
 
     // #[arg(short, long)]
     // pub build: bool,
+
+    #[arg(short, long)]
+    pub validate: bool,
 
     #[arg(short, long)]
     pub in_file: String,

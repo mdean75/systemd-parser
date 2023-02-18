@@ -288,11 +288,8 @@ impl Display for SystemdFile {
     }
 }
 
-pub fn parse(unparsed_file: &str) -> SystemdFile {
-    let file = SystemDParser::parse(Rule::file, &unparsed_file)
-        .expect("unsuccessful parse") // unwrap the parse result
-        .next()
-        .unwrap(); // get and unwrap the `file` rule; never fails
+pub fn parse(unparsed_file: &str) -> Result<SystemdFile, String> {
+    let file = SystemDParser::parse(Rule::file, &unparsed_file).map_err(|e| e.to_string())?.next().unwrap();
 
     let mut file_struct = SystemdFile::default();
 
@@ -555,5 +552,5 @@ pub fn parse(unparsed_file: &str) -> SystemdFile {
         }
     }
 
-    file_struct
+    Ok(file_struct)
 }
