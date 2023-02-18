@@ -1,7 +1,7 @@
 file = { SOI ~ (NEWLINE | unit | service | install | comment)+ ~ NEWLINE* ~ EOI }
 
-comment = { ("#" | "//") ~ (ASCII_ALPHANUMERIC  | SPACE_SEPARATOR | PUNCTUATION | SYMBOL)+ }
-directive_separator = { "=" | ":" }
+comment = { ("#" | ";") ~ (ASCII_ALPHANUMERIC  | SPACE_SEPARATOR | PUNCTUATION | SYMBOL)+ }
+directive_separator = { "=" | ":" | " = " }
 property_value = { (ASCII_ALPHANUMERIC | SPACE_SEPARATOR | PUNCTUATION | SYMBOL)+ }
 
 unit = { unit_tag ~ NEWLINE ~ unit_prop+ }

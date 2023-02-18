@@ -1,5 +1,6 @@
 use serde_derive::{Deserialize, Serialize};
 use std::fmt::{Display, Formatter};
+use std::fs;
 use pest::Parser;
 use pest_derive::Parser;
 
@@ -288,9 +289,15 @@ impl Display for SystemdFile {
     }
 }
 
-pub fn parse(unparsed_file: &str) -> Result<SystemdFile, String> {
-    let file = SystemDParser::parse(Rule::file, &unparsed_file).map_err(|e| e.to_string())?.next().unwrap();
+pub fn parse(file_name: &str) -> Result<SystemdFile, String> {
+    let unparsed_file = fs::read_to_string(file_name)
+        .map_err(|e| format!("{} {}", file_name, e.to_string()))?;
 
+    let file = SystemDParser::parse(Rule::file, &unparsed_file)
+        .map_err(|e| e.to_string())?
+        .next()
+        // this is documented as never panics but i don't want to use expect or unwrap
+        .ok_or("unable to convert Option to Result")?;
     let mut file_struct = SystemdFile::default();
 
 

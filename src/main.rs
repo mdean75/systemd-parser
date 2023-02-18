@@ -2,19 +2,22 @@ use std::fs;
 
 use clap::{Parser};
 use systemd_parser::parser::systemd::{SystemdFile};
+use systemd_parser::parser;
 
 fn main() {
 
     let args = Cli::parse();
 
     if args.validate {
-        let unparsed_file = fs::read_to_string(args.in_file).expect("cannot read file");
-        let parsed = systemd_parser::parser::systemd::parse(unparsed_file.as_str());
-        match parsed {
-            Err(e) => println!("File is not valid: \n{e}"),
-            Ok(_) => println!("File has valid syntax")
+        match parser::systemd::parse(args.in_file.as_str()) {
+            Ok(_) => {
+                println!("File has valid syntax");
+                std::process::exit(0)},
+            Err(e) => {
+                eprintln!("An error occurred: \n{e}");
+                std::process::exit(1)
+            }
         }
-        return;
     }
 
     if args.parse {
