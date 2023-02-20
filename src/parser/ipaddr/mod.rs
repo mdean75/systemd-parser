@@ -22,10 +22,23 @@ pub struct Interface {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub qlen: Option<String>,
     pub link: String,
-    pub inet: Vec<String>,
-    pub inet6: Vec<String>,
+    pub inet: Vec<Inet>,
+    pub inet6: Vec<Inet>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub alt_name: Option<String>
+}
+
+#[derive(Serialize, Deserialize, Default, Debug)]
+#[serde(rename_all="camelCase")]
+pub struct  Inet {
+    pub ip: String,
+    pub net_prefix: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub broadcast: Option<String>,
+    pub scope: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub label: Option<String>,
+    pub lifetime: String
 }
 
 pub fn parse(out: &str) -> Result<(), String> {
@@ -76,10 +89,83 @@ pub fn parse(out: &str) -> Result<(), String> {
                             iface.link = interface.as_span().as_str().to_string();
                         }
                         Rule::inet => {
-                            iface.inet.push(interface.as_span().as_str().to_string());
+                            let mut inet: Inet = Inet::default();
+                            for inet_entry in interface.into_inner() {
+                                match inet_entry.as_rule() {
+                                    Rule::ip => {
+                                        inet.ip = inet_entry.as_span().as_str().to_string()
+                                    }
+                                    Rule::net_prefix => {
+                                        inet.net_prefix = inet_entry.as_span().as_str().to_string()
+                                    }
+                                    // need to capture ipv4 broadcast
+                                    Rule::broadcast4 => {
+                                        for brd in inet_entry.into_inner() {
+                                            match brd.as_rule() {
+                                                Rule::ip => {
+                                                    inet.broadcast = Some(brd.as_span().as_str().to_string())
+                                                }
+
+                                                _ => {}
+                                            }
+                                        }
+                                    }
+                                    Rule::scope => {
+                                        for scope in inet_entry.into_inner() {
+                                            match scope.as_rule() {
+                                                Rule::scope_value => {
+                                                    inet.scope = scope.as_span().as_str().to_string()
+                                                }
+
+                                                _ => {}
+                                            }
+                                        }
+                                    }
+                                    Rule::label => {
+                                        inet.label = Some(inet_entry.as_span().as_str().to_string())
+                                    }
+                                    Rule::lifetime => {
+                                        inet.lifetime = inet_entry.as_span().as_str().to_string()
+                                    }
+
+                                    _ => {}
+                                }
+                            }
+                            iface.inet.push(inet)
                         }
                         Rule::inet6 => {
-                            iface.inet6.push(interface.as_span().as_str().to_string());
+                            let mut inet: Inet = Inet::default();
+                            for inet_entry in interface.into_inner() {
+                                match inet_entry.as_rule() {
+                                    Rule::ip6 => {
+                                        inet.ip = inet_entry.as_span().as_str().to_string()
+                                    }
+                                    Rule::net_prefix => {
+                                        inet.net_prefix = inet_entry.as_span().as_str().to_string()
+                                    }
+                                    // need to capture ipv4 broadcast
+                                    Rule::scope => {
+                                        for scope in inet_entry.into_inner() {
+                                            match scope.as_rule() {
+                                                Rule::scope_value => {
+                                                    inet.scope = scope.as_span().as_str().to_string()
+                                                }
+
+                                                _ => {}
+                                            }
+                                        }
+                                    }
+                                    Rule::label => {
+                                        inet.label = Some(inet_entry.as_span().as_str().to_string())
+                                    }
+                                    Rule::lifetime => {
+                                        inet.lifetime = inet_entry.as_span().as_str().to_string()
+                                    }
+
+                                    _ => {}
+                                }
+                            }
+                            iface.inet6.push(inet)
                         }
                         Rule::alt_name => {
                             iface.alt_name = Some(interface.as_span().as_str().to_string());
@@ -89,16 +175,13 @@ pub fn parse(out: &str) -> Result<(), String> {
                     }
                 }
 
-                // println!("{:?}", iface);
                 interfaces.insert(iface.if_name.clone(), iface);
             }
 
             _ => {}
         }
-        // println!("{}", line.as_span().as_str());
     }
 
-    // println!("{:?}", interfaces);
     for i in interfaces {
         println!("{}", serde_json::to_string_pretty(&i).unwrap())
     }

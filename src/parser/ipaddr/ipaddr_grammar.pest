@@ -2,12 +2,10 @@ ip_a_out = { SOI ~ interface+ ~ EOI }
 
 WHITESPACE = _{ " " }
 
-interface = { index ~ if_name ~ flags ~ mtu ~ qdisc ~ master? ~ state ~ group ~ qlen? ~ NEWLINE
-            ~ link ~ NEWLINE
-            ~ ((inet6 | inet | alt_name) ~ NEWLINE)+ }
+interface = { index ~ ":" ~ if_name ~ ":" ~ flags ~ mtu ~ qdisc ~ master? ~ state ~ group ~ qlen? ~ NEWLINE ~ link ~ NEWLINE ~ ((inet6 | inet | alt_name) ~ NEWLINE)+ }
 
-index = { ASCII_DIGIT+ ~ ":" }
-if_name = { (ASCII_ALPHANUMERIC | "@")+ ~ ":" }
+index = { ASCII_DIGIT+ }
+if_name = { (ASCII_ALPHANUMERIC | "@")+ }
 flags = { "<" ~ (flag ~ ("," ~ flag)*) ~ ">" }
 flag = { (ASCII_ALPHA_UPPER | CONNECTOR_PUNCTUATION | "-")+ }
 mtu = { "mtu" ~ ASCII_DIGIT+ }
@@ -21,9 +19,10 @@ address = @{ (ASCII_ALPHANUMERIC | ":")+ }
 broadcast = { "brd" ~ address }
 master = @{ "master" ~ SPACE_SEPARATOR ~ ASCII_ALPHANUMERIC+ }
 alt_name = @{ "altname" ~ " " ~ ASCII_ALPHANUMERIC+ }
-inet = { "inet" ~ ip ~ net_prefix ~ ("brd" ~ ip)? ~ scope ~ label ~ NEWLINE ~ lifetime }
+inet = { "inet" ~ ip ~ net_prefix ~ broadcast4? ~ scope ~ label ~ NEWLINE ~ lifetime }
 inet6 = { "inet6" ~ ip6 ~ net_prefix ~ scope ~ label? ~ NEWLINE ~ lifetime}
 
+broadcast4 = { "brd" ~ ip }
 ip = { ASCII_DIGIT{1,3} ~ "." ~ ASCII_DIGIT{1,3} ~ "." ~ ASCII_DIGIT{1,3} ~ "." ~ ASCII_DIGIT{1,3} }
 ip6 = { (ASCII_ALPHANUMERIC | ":")+ }
 net_prefix = { "/" ~ ASCII_DIGIT{1,3} }
