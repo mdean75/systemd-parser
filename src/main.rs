@@ -11,7 +11,7 @@ fn main() {
 
     if args.ipaddr {
 
-        let cmd_out = Command::new("/bin/ip").arg("a").output().expect("command out");
+        let cmd_out = Command::new("/usr/sbin/ip").arg("a").output().expect("command out");
         let parse_result = parser::ipaddr::parse(String::from_utf8(cmd_out.stdout).unwrap().as_str());
         match parse_result {
             Ok(_) => println!("Successful parse"),
