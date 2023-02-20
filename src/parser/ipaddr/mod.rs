@@ -37,6 +37,8 @@ pub struct  Inet {
     pub broadcast: Option<String>,
     pub scope: String,
     #[serde(skip_serializing_if = "Option::is_none")]
+    pub conf_flag: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub label: Option<String>,
     pub lifetime: String
 }
@@ -121,6 +123,9 @@ pub fn parse(out: &str) -> Result<(), String> {
                                             }
                                         }
                                     }
+                                    Rule::conf_flag => {
+                                        inet.conf_flag = Some(inet_entry.as_span().as_str().to_string())
+                                    }
                                     Rule::label => {
                                         inet.label = Some(inet_entry.as_span().as_str().to_string())
                                     }
@@ -154,6 +159,9 @@ pub fn parse(out: &str) -> Result<(), String> {
                                                 _ => {}
                                             }
                                         }
+                                    }
+                                    Rule::conf_flag => {
+                                        inet.conf_flag = Some(inet_entry.as_span().as_str().to_string())
                                     }
                                     Rule::label => {
                                         inet.label = Some(inet_entry.as_span().as_str().to_string())
