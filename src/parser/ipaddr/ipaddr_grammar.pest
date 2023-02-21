@@ -6,13 +6,30 @@ interface = { index ~ ":" ~ if_name ~ ":" ~ flags ~ mtu ~ qdisc ~ master? ~ stat
 
 index = { ASCII_DIGIT+ }
 if_name = { (ASCII_ALPHANUMERIC | "@")+ }
+
 flags = { "<" ~ (flag ~ ("," ~ flag)*) ~ ">" }
 flag = { (ASCII_ALPHA_UPPER | CONNECTOR_PUNCTUATION | "-")+ }
-mtu = { "mtu" ~ ASCII_DIGIT+ }
-qdisc = @{ "qdisc" ~ SPACE_SEPARATOR ~ (ASCII_ALPHANUMERIC | CONNECTOR_PUNCTUATION)+ }
-state = @{ "state" ~ SPACE_SEPARATOR ~ ASCII_ALPHA_UPPER+ }
-group = @{ "group" ~ SPACE_SEPARATOR ~ ASCII_ALPHANUMERIC+ }
-qlen = @{ "qlen" ~ SPACE_SEPARATOR ~ ASCII_DIGIT+ }
+
+mtu = { mtu_identifier ~ mtu_value }
+mtu_identifier = { "mtu" }
+mtu_value = { ASCII_DIGIT+ }
+
+qdisc = { qdisc_identifier ~ qdisc_value }
+qdisc_identifier = { "qdisc" }
+qdisc_value = @{ (ASCII_ALPHANUMERIC | CONNECTOR_PUNCTUATION)+ }
+
+state = { state_identifier ~ state_value }
+state_identifier = { "state" }
+state_value = { ASCII_ALPHA_UPPER+ }
+
+group = { group_identifier ~ group_value }
+group_identifier = { "group" }
+group_value = @{ ASCII_ALPHANUMERIC+ }
+
+qlen = { qlen_identifier ~ qlen_value }
+qlen_identifier = { "qlen" }
+qlen_value = { ASCII_DIGIT+ }
+
 link = { link_type ~ address ~ broadcast ~ ("link-netnsid" ~ ASCII_DIGIT+)? }
 link_type = @{ "link/" ~ ASCII_ALPHA+ }
 address = @{ (ASCII_ALPHANUMERIC | ":")+ }
@@ -25,7 +42,7 @@ inet6 = { "inet6" ~ ip6 ~ net_prefix ~ scope ~ conf_flag? ~ label? ~ NEWLINE ~ l
 broadcast4 = { "brd" ~ ip }
 ip = { ASCII_DIGIT{1,3} ~ "." ~ ASCII_DIGIT{1,3} ~ "." ~ ASCII_DIGIT{1,3} ~ "." ~ ASCII_DIGIT{1,3} }
 ip6 = { (ASCII_ALPHANUMERIC | ":")+ }
-net_prefix = { "/" ~ ASCII_DIGIT{1,3} }
+net_prefix = @{ "/" ~ ASCII_DIGIT{1,3} }
 scope = { scope_identifier ~ scope_value }
 scope_identifier = { "scope" }
 scope_value = @{ ASCII_ALPHANUMERIC+ }

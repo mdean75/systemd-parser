@@ -70,22 +70,63 @@ pub fn parse(out: &str) -> Result<(), String> {
                             iface.flags = interface.as_span().as_str().to_string();
                         },
                         Rule::mtu => {
-                            iface.mtu = interface.as_span().as_str().to_string();
+                            for mtu in interface.into_inner() {
+                                match mtu.as_rule() {
+                                    Rule::mtu_value => {
+                                        iface.mtu = mtu.as_span().as_str().to_string();
+                                    }
+
+                                    _ => {}
+                                }
+                            }
                         }
                         Rule::qdisc => {
-                            iface.qdisc = interface.as_span().as_str().to_string();
+                            for qdisc_entry in interface.into_inner() {
+                                match qdisc_entry.as_rule() {
+                                    Rule::qdisc_value => {
+                                        iface.qdisc = qdisc_entry.as_span().as_str().to_string();
+                                    }
+
+                                    _ => {}
+                                }
+                            }
+
                         }
                         Rule::master => {
                             iface.master = Some(interface.as_span().as_str().to_string());
                         }
                         Rule::state => {
-                            iface.state = interface.as_span().as_str().to_string();
+                            for state_entry in interface.into_inner() {
+                                match state_entry.as_rule() {
+                                    Rule::state_value => {
+                                        iface.state = state_entry.as_span().as_str().to_string()
+                                    }
+
+                                    _ => {}
+                                }
+                            }
                         }
                         Rule::group => {
-                            iface.group = interface.as_span().as_str().to_string();
+                            for group_entry in interface.into_inner() {
+                                match group_entry.as_rule() {
+                                    Rule::group_value => {
+                                        iface.group = group_entry.as_span().as_str().to_string()
+                                    }
+
+                                    _ => {}
+                                }
+                            }
                         }
                         Rule::qlen => {
-                            iface.qlen = Some(interface.as_span().as_str().to_string());
+                            for qlen_entry in interface.into_inner() {
+                                match qlen_entry.as_rule() {
+                                    Rule::qlen_value => {
+                                        iface.qlen = Some(qlen_entry.as_span().as_str().to_string())
+                                    }
+
+                                    _ => {}
+                                }
+                            }
                         }
                         Rule::link => {
                             iface.link = interface.as_span().as_str().to_string();
