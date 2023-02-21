@@ -22,7 +22,9 @@ pub struct Interface {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub qlen: Option<String>,
     pub link: String,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
     pub inet: Vec<Inet>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
     pub inet6: Vec<Inet>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub alt_name: Option<String>
@@ -93,7 +95,15 @@ pub fn parse(out: &str) -> Result<(), String> {
 
                         }
                         Rule::master => {
-                            iface.master = Some(interface.as_span().as_str().to_string());
+                            for master_entry in interface.into_inner() {
+                                match master_entry.as_rule() {
+                                    Rule::master_value => {
+                                        iface.master = Some(master_entry.as_span().as_str().to_string())
+                                    }
+
+                                    _ => {}
+                                }
+                            }
                         }
                         Rule::state => {
                             for state_entry in interface.into_inner() {

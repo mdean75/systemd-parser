@@ -2,10 +2,10 @@ ip_a_out = { SOI ~ interface+ ~ EOI }
 
 WHITESPACE = _{ " " }
 
-interface = { index ~ ":" ~ if_name ~ ":" ~ flags ~ mtu ~ qdisc ~ master? ~ state ~ group ~ qlen? ~ NEWLINE ~ link ~ NEWLINE ~ ((inet6 | inet | alt_name) ~ NEWLINE)+ }
+interface = { index ~ ":" ~ if_name ~ ":" ~ flags ~ mtu ~ qdisc ~ master? ~ state ~ group ~ qlen? ~ NEWLINE ~ link ~ NEWLINE ~ ((inet6 | inet | alt_name) ~ NEWLINE)* }
 
 index = { ASCII_DIGIT+ }
-if_name = { (ASCII_ALPHANUMERIC | "@")+ }
+if_name = { (ASCII_ALPHANUMERIC | "@" | "-")+ }
 
 flags = { "<" ~ (flag ~ ("," ~ flag)*) ~ ">" }
 flag = { (ASCII_ALPHA_UPPER | CONNECTOR_PUNCTUATION | "-")+ }
@@ -34,7 +34,11 @@ link = { link_type ~ address ~ broadcast ~ ("link-netnsid" ~ ASCII_DIGIT+)? }
 link_type = @{ "link/" ~ ASCII_ALPHA+ }
 address = @{ (ASCII_ALPHANUMERIC | ":")+ }
 broadcast = { "brd" ~ address }
-master = @{ "master" ~ SPACE_SEPARATOR ~ ASCII_ALPHANUMERIC+ }
+
+master = { master_identifier ~ master_value }
+master_identifier = { "master" }
+master_value = @{ ASCII_ALPHANUMERIC+ }
+
 alt_name = @{ "altname" ~ " " ~ ASCII_ALPHANUMERIC+ }
 inet = { "inet" ~ ip ~ net_prefix ~ broadcast4? ~ scope ~ conf_flag? ~ label? ~ NEWLINE ~ lifetime }
 inet6 = { "inet6" ~ ip6 ~ net_prefix ~ scope ~ conf_flag? ~ label? ~ NEWLINE ~ lifetime}
