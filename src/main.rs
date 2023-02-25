@@ -2,8 +2,8 @@ use std::fs;
 use std::process::Command;
 
 use clap::{Parser};
-use systemd_parser::parser::systemd::{SystemdFile};
 use systemd_parser::parser;
+use systemd_parser::parser::systemd::SystemdFile;
 
 fn main() {
 
@@ -14,7 +14,10 @@ fn main() {
         let cmd_out = Command::new("/usr/sbin/ip").arg("a").output().expect("command out");
         let parse_result = parser::ipaddr::parse(String::from_utf8(cmd_out.stdout).unwrap().as_str());
         match parse_result {
-            Ok(_) => println!("Successful parse"),
+            Ok(interfaces) => {
+                // println!("Successful parse")
+                println!("{:?}", interfaces)
+            },
             Err(e) => eprintln!("failed to parse: {e}")
         }
         return;

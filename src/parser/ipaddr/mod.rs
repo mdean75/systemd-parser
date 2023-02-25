@@ -1,7 +1,22 @@
 use std::collections::HashMap;
+use std::ffi::{CStr, CString};
+use std::process::Command;
 use pest::Parser;
 use pest_derive::Parser;
 use serde_derive::{Deserialize, Serialize};
+use libc;
+
+
+#[no_mangle]
+pub extern "C" fn parser() {
+    println!("This would be the parse function in Rust ... this is in the crate parser::ipaddr");
+    let cmd_out = Command::new("/usr/sbin/ip").arg("a").output().expect("command out");
+    let parse_result = parse(String::from_utf8(cmd_out.stdout).unwrap().as_str());
+    match parse_result {
+        Ok(_) => println!("Successful parse"),
+        Err(e) => eprintln!("failed to parse: {e}")
+    }
+}
 
 #[derive(Parser)]
 #[grammar = "src/parser/ipaddr/ipaddr_grammar.pest"]
@@ -30,6 +45,18 @@ pub struct Interface {
     pub alt_name: Option<String>
 }
 
+#[repr(C)]
+#[derive(Copy, Clone)]
+pub struct Person {
+    pub age: u8,
+    pub name: *const libc::c_char,
+}
+
+#[no_mangle]
+pub extern "C" fn new_person() -> Person {
+    Person{ age: 0, name: std::ptr::null() }
+}
+
 #[derive(Serialize, Deserialize, Default, Debug)]
 #[serde(rename_all="camelCase")]
 pub struct  Inet {
@@ -45,13 +72,17 @@ pub struct  Inet {
     pub lifetime: String
 }
 
-pub fn parse(out: &str) -> Result<(), String> {
+pub fn parse(out: &str) -> Result<HashMap<String, Interface>, String> {
     let ip_addr_out = IpaddrParser::parse(Rule::ip_a_out, out)
         .map_err(|e| e.to_string())?
         .next()
         // this is documented as never panics but i don't want to use expect or unwrap
         .ok_or("unable to convert Option to Result")?;
 
+    // let mut pp = Person::default();
+    // let cc = CString::new("mike").unwrap();
+    // pp.name = cc.as_ptr();
+    // pp.name = CString::new("test").unwrap();
     let mut interfaces: HashMap<String, Interface> = HashMap::new();
     for line in ip_addr_out.into_inner() {
         match line.as_rule() {
@@ -241,8 +272,8 @@ pub fn parse(out: &str) -> Result<(), String> {
         }
     }
 
-    for i in interfaces {
-        println!("{}", serde_json::to_string_pretty(&i).unwrap())
-    }
-    return Ok(())
+    // for i in interfaces {
+    //     println!("{}", serde_json::to_string_pretty(&i).unwrap())
+    // }
+    return Ok(interfaces)
 }

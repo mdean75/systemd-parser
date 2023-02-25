@@ -360,6 +360,7 @@ name = "systemd-parser"
 version = "0.1.0"
 dependencies = [
  "clap",
+ "libc",
  "pest",
  "pest_derive",
  "serde",
